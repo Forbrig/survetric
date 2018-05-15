@@ -26,7 +26,14 @@ running = True
 
 while running:
     screen.fill(0)
-    pygame.draw.line(screen, (50, 30, 30), (100, 510), (700, 510), 20) # bottom soil
+    pygame.draw.line(screen, (50, 30, 30), (120, 510), (700, 510), 20) # bottom soil
+    pygame.draw.polygon(screen, (50, 30, 30), ((100, 500), (120, 500), (120, 520)), 0)
+    pygame.draw.polygon(screen, (50, 30, 30), ((700, 500), (700, 520), (720, 520)), 0)
+
+    pygame.draw.line(screen, (70, 50, 50), (710, 120), (710, 500), 20) # right soil
+    pygame.draw.polygon(screen, (70, 50, 50), ((700, 100), (700, 120), (720, 120)), 0)
+    pygame.draw.polygon(screen, (70, 50, 50), ((720, 500), (720, 520), (700, 500)), 0)
+
     pygame.draw.polygon(screen, (30, 160, 30), (left_up, left_bottom, right_bottom, right_up, left_up), 0) # terrain
     pygame.draw.polygon(screen, (255, 0, 0), ((0 + player_pos[0], 0 + player_pos[1]), (0 + player_pos[0], 25 + player_pos[1]), (25 + player_pos[0], 25 + player_pos[1]), (25 + player_pos[0], 0 + player_pos[1]), (0 + player_pos[0], 0 + player_pos[1])), 0)
 
