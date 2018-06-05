@@ -1,5 +1,17 @@
 import pygame
 
+class player(object):
+    def __init__(self):
+        self.x = 100
+        self.y = 100
+
+    def draw(self):
+        pygame.draw.polygon(screen, (255, 0, 0), ((self.x, self.y), (self.x, 25 + self.y), (25 + self.x, 25 + self.y), (25 + self.x, self.y), (self.x, self.y)), 0)
+
+    def move(self, speed_x, speed_y):
+        self.x += speed_x
+        self.y += speed_y
+
 display_width = 800
 display_height = 600
 
@@ -9,21 +21,16 @@ screen = pygame.display.set_mode(screenDimension, 0, 32)
 pygame.display.set_caption("survetric")
 clock = pygame.time.Clock()
 
-
-#def player(x, y):
-#    x = display_width
-#    y = display_height
-
-player_pos = [100, 100]
-player_velo = 25
-
 left_up = (100, 100)
 right_up = (100, 500)
 left_bottom = (700, 100)
 right_bottom = (700, 500)
 
-running = True
+player = player()
+speed_x = 0
+speed_y = 0
 
+running = True
 while running:
     screen.fill(0)
     pygame.draw.line(screen, (50, 30, 30), (120, 510), (700, 510), 20) # bottom soil
@@ -35,25 +42,33 @@ while running:
     pygame.draw.polygon(screen, (70, 50, 50), ((720, 500), (720, 520), (700, 500)), 0)
 
     pygame.draw.polygon(screen, (30, 160, 30), (left_up, left_bottom, right_bottom, right_up, left_up), 0) # terrain
-    pygame.draw.polygon(screen, (255, 0, 0), ((0 + player_pos[0], 0 + player_pos[1]), (0 + player_pos[0], 25 + player_pos[1]), (25 + player_pos[0], 25 + player_pos[1]), (25 + player_pos[0], 0 + player_pos[1]), (0 + player_pos[0], 0 + player_pos[1])), 0)
 
+    #drawing grid on the map
+    for x in range(125, 700, 25):
+        pygame.draw.line(screen, (70, 50, 50), (x, 100), (x, 500), 1)
+    for y in range(125, 500, 25):
+        pygame.draw.line(screen, (70, 50, 50), (100, y), (700, y), 1)
+
+    player.draw()
 
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_w:
-                player_pos[1] -= player_velo;
+                speed_y -= 25;
             if event.key == pygame.K_s:
-                player_pos[1] += player_velo;
+                speed_y += 25;
             if event.key == pygame.K_a:
-                player_pos[0] -= player_velo;
+                speed_x -= 25;
             if event.key == pygame.K_d:
-                player_pos[0] += player_velo;
-
+                speed_x += 25;
+        elif event.type == pygame.KEYUP:
+            speed_x = 0
+            speed_y = 0
 
         if event.type == pygame.QUIT:
             running = False
 
-        #print(event)
+    player.move(speed_x, speed_y)
 
     pygame.display.update()
     clock.tick(60)
