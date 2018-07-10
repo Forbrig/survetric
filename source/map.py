@@ -9,7 +9,7 @@ class map(object):
         self.font = pygame.font.Font(None, 30)
 
 
-    def draw(self, screen, clock):
+    def draw_map(self, screen, clock):
         fps = self.font.render(str(int(clock.get_fps())), True, pygame.Color('green'))
         screen.fill(0)
 
