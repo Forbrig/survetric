@@ -9,6 +9,8 @@ class player(object):
             self.color = (0, 255, 0)
         elif color == "blue":
             self.color = (0, 0, 255)
+        else:
+            self.color = color
         self.x = 100
         self.y = 100
 
