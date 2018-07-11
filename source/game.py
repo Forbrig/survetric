@@ -3,10 +3,6 @@ from bottle import route
 from player import *
 from map import *
 
-my_ip = "192.168.0.8"
-my_port = "8080"
-my_id = my_ip + ":" + my_port
-
 players = {}
 player_ = player("blue")
 
@@ -16,6 +12,7 @@ def get_info():
     global player_
     return {my_id:player_.get_info()}
 
+# game settings and loop
 def game():
     screen = pygame.display.set_mode((800, 600), 0, 32)
     pygame.display.set_caption("survetric")
