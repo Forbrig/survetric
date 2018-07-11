@@ -1,6 +1,20 @@
-import pygame
+import pygame, threading, bottle
+from bottle import route
 from player import *
 from map import *
+
+my_ip = "192.168.0.8"
+my_port = "8080"
+my_id = my_ip + ":" + my_port
+
+players = {}
+player_ = player("blue")
+
+# return the client player state
+@route('/get_data')
+def get_info():
+    global player_
+    return {my_id:player_.get_info()}
 
 def game():
     screen = pygame.display.set_mode((800, 600), 0, 32)
@@ -11,7 +25,7 @@ def game():
     map_ = map()
     map_tab = False
 
-    player_ = player()
+    global player_
     player_speed_x = 0
     player_speed_y = 0
 
@@ -20,6 +34,13 @@ def game():
     while running:
         map_.draw_map(screen, clock)
         player_.draw(screen)
+
+        # draw other players on the screen
+        for p in players:
+            try:
+                p.draw(screen)
+            except:
+                pass
 
         # draw connection informations
         if map_tab == True:
@@ -54,3 +75,4 @@ def game():
 
 if __name__ == "__main__":
     game()
+    get_info()
