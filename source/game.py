@@ -6,12 +6,14 @@ from map import *
 player_ = player("blue")
 
 # use requests package to get the public ip from a site
-my_ip = requests.get('http://ip.42.pl/raw').text
+#my_ip = requests.get('http://ip.42.pl/raw').text
+my_ip = "192.168.0.5"
 my_port = "8081" #
 my_id = my_ip + ":" + my_port
 #print(my_id)
 peers = []
 players = {}
+bully = False
 
 # listen on all interfaces including the external one (just use external ip)
 def server():
@@ -45,7 +47,7 @@ def get_peers():
                 for new in new_peers:
                     if new not in peers: # or peer != "http://" + my_id:
                         peers.append(new)
-                        print("New address found, new list of peers:")
+                        # print("New address found, new list of peers:")
                         # for peer in peers:
                         #     print(peer)
             except:
@@ -53,39 +55,39 @@ def get_peers():
         time.sleep(5) # idk if it slows the lagging in the game
 
 # get players info from other peers, update the players dict inside game.py
-@get('/get_peers_data')
-def get_peers_data():
-    global peers
-    global players
-    while True:
-        for peer in peers:
-            new_data = requests.get(peer + "/get_data")
-            new_data = json.loads(new_data.text)
-            #print(new_data)
-            #print(new_data[0], new_data[1][0], new_data[1][1])
-            #print(peer)
-            #players[peer] = new_data
-            if players.get(peer) == None:
-                new_player_ = player(new_data[0]) # color
-                new_player_.move(new_data[1][0], new_data[1][1]) # position
-                players[peer] = new_player_
-            else:
-                players[peer].move(new_data[1][0], new_data[1][1])
-
-            # try:
-            #     new_data = requests.get(peer + "/get_data")
-            #     new_data = json.loads(new_data.text)
-            #     if players.get(peer) == None:
-            #         new_player_ = player(new_data[0]) # color
-            #         new_player_.move(new_data[1]) # position
-            #         players[peer] = new_player_
-            #     else:
-            #         players[peer].move = new_data[1]
-            #     ################
-            #     for p in players:
-            #         print(p)
-            # except:
-            #     pass
+# @get('/get_peers_data')
+# def get_peers_data():
+#     global peers
+#     global players
+#     while True:
+#         for peer in peers:
+#             new_data = requests.get(peer + "/get_data")
+#             new_data = json.loads(new_data.text)
+#             #print(new_data)
+#             #print(new_data[0], new_data[1][0], new_data[1][1])
+#             #print(peer)
+#             #players[peer] = new_data
+#             if players.get(peer) == None:
+#                 new_player_ = player(new_data[0]) # color
+#                 new_player_.move(new_data[1][0], new_data[1][1]) # position
+#                 players[peer] = new_player_
+#             else:
+#                 players[peer].move(new_data[1][0], new_data[1][1])
+#
+#             # try:
+#             #     new_data = requests.get(peer + "/get_data")
+#             #     new_data = json.loads(new_data.text)
+#             #     if players.get(peer) == None:
+#             #         new_player_ = player(new_data[0]) # color
+#             #         new_player_.move(new_data[1]) # position
+#             #         players[peer] = new_player_
+#             #     else:
+#             #         players[peer].move = new_data[1]
+#             #     ################
+#             #     for p in players:
+#             #         print(p)
+#             # except:
+#             #     pass
 
 # return the client player state
 @route('/get_data')
@@ -93,12 +95,19 @@ def get_data():
     global player_
     return json.dumps(player_.get_info())
 
+# see if im the bully (algorithm of election)
+@route('/get_bully')
+def get_bully():
+    global bully
+    return json.dumps(bully)
+
 # game settings and loop
 def game():
     screen = pygame.display.set_mode((800, 600), 0, 32)
     pygame.display.set_caption("survetric")
     pygame.init()
     clock = pygame.time.Clock()
+    font = pygame.font.Font(None, 30)
 
     map_ = map()
     map_tab = False
@@ -106,6 +115,10 @@ def game():
     global players
     global peers
     global player_
+    # election algorithm
+    global bully
+    bully_flag = False
+
     player_speed_x = 0
     player_speed_y = 0
 
@@ -113,32 +126,52 @@ def game():
     running = True
     while running:
         map_.draw_map(screen, clock)
-        player_.draw(screen)
+        player_.draw_hud(screen)
+        player_.draw_body(screen)
+
+        # election algorithm
+        bully_flag = True
+        for peer in peers:
+            token = peer.split(':')
+            if int(token[2]) > int(my_port):
+                bully_flag = False
+                break
+
+        if bully_flag == True:
+            bully = True
+        else:
+            bully = False
 
         # draw other players on the screen
         for peer in peers:
-            new_data = requests.get(peer + "/get_data")
-            new_data = json.loads(new_data.text)
-            print(new_data)
-            if players.get(peer) == None:
-                new_player_ = player(new_data[0]) # color
-                new_player_.move(new_data[1][0], new_data[1][1]) # position
-                players[peer] = new_player_
-            else:
-                players.get(peer).move(new_data[1][0], new_data[1][1])
-        # for p in players:
-        #     print("tem isso ai")
-        #     print(p)
-        #     players[p].draw(screen)
-        #     #p.draw(screen)
-        #     # try:
-        #     #     p.draw(screen)
-        #     # except:
-        #     #     pass
+            try:
+                new_data = requests.get(peer + "/get_data")
+                new_data = json.loads(new_data.text)
+                pygame.draw.polygon(screen, new_data[0], ((new_data[1][0], new_data[1][1]), (new_data[1][0], 25 + new_data[1][1]), (25 + new_data[1][0], 25 + new_data[1][1]), (25 + new_data[1][0], new_data[1][1]), (new_data[1][0], new_data[1][1])), 0)
+            except:
+                peers.remove(peer)
 
-        # draw connection informations
+            # print(new_data)
+            # if players.get(peer) == None:
+            #     new_player_ = player(new_data[0]) # color
+            #     new_player_.move(new_data[1][0], new_data[1][1]) # position
+            #     players[peer] = new_player_
+            # else:
+            #     players[peer].get(peer).move(new_data[1][0], new_data[1][1])
+            #
+            # print("as coordenadas: " + str(players.get(peer).x) + " " + str(players.get(peer).y))
+            # players.get(peer).draw(screen)
+
+        # draw connection informations if TAB is pressed
         if map_tab == True:
             pygame.draw.polygon(screen, (128, 128, 128), ((50, 50), (50, 550), (750, 550), (750, 50)), 0)
+            for i, peer in enumerate(peers):
+                if bully == True:
+                    bul = font.render("i'm the bully", True, pygame.Color('red'))
+                    screen.blit(bul, (400, 300))
+
+                text = font.render(str(peer), True, pygame.Color('black'))
+                screen.blit(text, (60, 60 + (i * 20)))
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -185,13 +218,9 @@ valid_con_t.start()
 print("Running on: http://" + my_id)
 while True:
     new_con = input()
-    # test = requests.get(new_con + "/test_con")
-    # test = json.loads(test.text)
-    # peers.append(new_con)
     try:
         test = requests.get(new_con + "/test_con")
         test = json.loads(test.text)
-        print(test)
         if test == True:
             print("This address is valid, connecting...")
             if new_con not in peers:
