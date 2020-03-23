@@ -1,6 +1,8 @@
 # survetric
 Testing peer to peer programming using python and pygame.
 
+![survetric](https://raw.githubusercontent.com/Forbrig/survetric/master/survetric.png)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
