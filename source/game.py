@@ -6,9 +6,9 @@ from map import *
 player_ = player("blue")
 
 # use requests package to get the public ip from a site
-#my_ip = requests.get('http://ip.42.pl/raw').text
-my_ip = "192.168.0.5"
-my_port = "8081" #
+# my_ip = requests.get('http://ip.42.pl/raw').text
+my_ip = "0.0.0.0"
+my_port = "8081" # try one that is not taken
 my_id = my_ip + ":" + my_port
 #print(my_id)
 peers = []
@@ -18,7 +18,7 @@ bully = False
 # listen on all interfaces including the external one (just use external ip)
 def server():
     try:
-        run(host = '0.0.0.0', port = my_port, quiet = True) # quiet = true, dont show connections on terminal
+        run(host = my_ip, port = my_port, quiet = True) # quiet = true, dont show connections on terminal
     except:
         print("Cant use this id, exiting...")
         exit()
